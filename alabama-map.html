@@ -242,6 +242,11 @@
                     information.</em
                 >
             </p>
+
+            <div class="file-content-section">
+                <h3>Numbers from External File: <span id="filePathDisplay">Loading...</span></h3>
+                <pre id="fileContentDisplay">Loading numbers...</pre>
+            </div>
         </main>
         <footer>
             <p>© 2025 Moving to Alabama Guide</p>
@@ -255,14 +260,29 @@
 
             // Element to display the file path
             const filePathDisplay = document.getElementById('filePathDisplay');
-            filePathDisplay.textContent = filePath; // Show the path being fetched
 
             // Element to display the extracted numbers
             const fileContentDisplay = document.getElementById('fileContentDisplay');
 
+            // Set the initial text content for filePathDisplay if the element was found
+            // This defensive check is good practice, though moving the script to the end of <body> usually resolves the core issue.
+            if (filePathDisplay) {
+                filePathDisplay.textContent = filePath; // Show the path being fetched
+            } else {
+                console.error("Element with ID 'filePathDisplay' not found! Please check your HTML structure.");
+            }
+
+
             // Function to read the text file from the URL and display numbers
             function readTextFile() {
-                fileContentDisplay.textContent = 'Loading numbers...'; // Reset content on call
+                // Set initial loading message, ensuring the element exists before trying to modify it
+                if (fileContentDisplay) {
+                    fileContentDisplay.textContent = 'Loading numbers...';
+                } else {
+                    console.error("Element with ID 'fileContentDisplay' not found! Cannot display loading message.");
+                    return; // Exit if the display element isn't found
+                }
+
 
                 fetch(filePath)
                     .then(response => {
