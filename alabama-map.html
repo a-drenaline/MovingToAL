@@ -267,7 +267,8 @@
             // Set the initial text content for filePathDisplay if the element was found
             // This defensive check is good practice, though moving the script to the end of <body> usually resolves the core issue.
             if (filePathDisplay) {
-                filePathDisplay.textContent = filePath; // Show the path being fetched
+                // filePathDisplay.textContent = filePath; // Show the path being fetched
+                filePathDisplay.textContent = ""; // Show the path being fetched
             } else {
                 console.error("Element with ID 'filePathDisplay' not found! Please check your HTML structure.");
             }
