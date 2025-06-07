@@ -244,7 +244,7 @@
             </p>
 
             <div class="file-content-section">
-                <h3>Numbers from External File: <span id="filePathDisplay">Loading...</span></h3>
+                <h3>External File Section <span id="filePathDisplay">Loading...</span></h3>
                 <pre id="fileContentDisplay">Loading numbers...</pre>
             </div>
         </main>
@@ -272,17 +272,51 @@
                 console.error("Element with ID 'filePathDisplay' not found! Please check your HTML structure.");
             }
 
+            /**
+             * Formats a number to either an integer or two decimal places.
+             * @param {number} num The number to format.
+             * @param {string} format 'integer' or 'two-decimals'.
+             * @returns {string} The formatted number as a string.
+             */
+            function formatNumber(num, format) {
+                if (typeof num !== 'number' || isNaN(num)) {
+                    return ''; // Handle non-numeric input gracefully
+                }
+                if (format === 'integer') {
+                    return Math.round(num).toString(); // Round to nearest integer
+                } else if (format === 'two-decimals') {
+                    return num.toFixed(2); // Fix to 2 decimal places
+                }
+                return num.toString(); // Default to original string representation if format is unknown
+            }
 
-            // Function to read the text file from the URL and display numbers
+            /**
+             * Displays the numbers from `extractedNumbersArray` in the specified format.
+             * @param {string} format 'integer' or 'two-decimals'.
+             */
+            function displayNumbers(format) {
+                if (fileContentDisplay) {
+                    if (extractedNumbersArray.length > 0) {
+                        const formattedNumbers = extractedNumbersArray.map(num => formatNumber(num, format));
+                        fileContentDisplay.textContent = formattedNumbers.join('\n');
+                    } else {
+                        fileContentDisplay.textContent = "No numbers found in the file to display.";
+                    }
+                } else {
+                    console.error("Element with ID 'fileContentDisplay' not found! Cannot display numbers.");
+                }
+            }
+
+
+            // Function to read the text file from the URL, extract numbers, and store them
             function readTextFile() {
                 // Set initial loading message, ensuring the element exists before trying to modify it
                 if (fileContentDisplay) {
                     fileContentDisplay.textContent = 'Loading numbers...';
                 } else {
                     console.error("Element with ID 'fileContentDisplay' not found! Cannot display loading message.");
-                    return; // Exit if the display element isn't found
+                    return;
                 }
-
 
                 fetch(filePath)
                     .then(response => {
@@ -293,26 +327,46 @@
                         return response.text(); // Get the response body as plain text
                     })
                     .then(data => {
-                        // Use a regular expression to find all numbers (integers and decimals)
-                        // \b ensures whole numbers/decimals are matched (e.g., 123, 45.67)
-                        const numbers = data.match(/\b(\d+(\.\d+)?)\b/g);
+                        // Regex to find all numbers (integers and decimals)
+                        const numberStrings = data.match(/\b(\d+(\.\d+)?)\b/g);
 
-                        if (numbers && numbers.length > 0) {
-                            // Display each found number on a new line
-                            fileContentDisplay.textContent = numbers.join('\n');
+                        if (numberStrings && numberStrings.length > 0) {
+                            // Convert string numbers to actual numeric types (floats)
+                            // Using parseFloat ensures they are treated as floats, even if they're whole numbers.
+                            extractedNumbersArray = numberStrings.map(parseFloat);
+
+                            // Initial display will be in integer format by default
+                            displayNumbers('integer'); // Or 'two-decimals' if you prefer that as default
+
+                            console.log("Numbers successfully loaded and stored in 'extractedNumbersArray':", extractedNumbersArray);
+                            console.log("Type of first element:", typeof extractedNumbersArray[0]); // Verify it's a number
                         } else {
+                            extractedNumbersArray = []; // Ensure the array is empty if no numbers are found
                             fileContentDisplay.textContent = "No numbers found in the file.";
+                            console.log("No numbers found in the file.");
                         }
                     })
                     .catch(error => {
                         // Handle any errors during the fetch operation (e.g., file not found, network issues)
                         console.error('Error fetching the file:', error);
                         fileContentDisplay.textContent = `Error loading file: ${error.message}. Please ensure '${filePath}' exists and is accessible.`;
+                        extractedNumbersArray = []; // Clear array on error
                     });
             }
 
             // Call the function to read the file when the page loads
             readTextFile();
+
+            // Example of how you can use extractedNumbersArray after it's populated
+            // For example, if you want to perform calculations:
+            /*
+            setTimeout(() => { // Using setTimeout as fetch is asynchronous
+                if (extractedNumbersArray.length > 0) {
+                    let sum = extractedNumbersArray.reduce((acc, curr) => acc + curr, 0);
+                    console.log("Sum of numbers:", sum);
+                }
+            }, 1000);
+            */
         </script>
     </body>
 </html>
