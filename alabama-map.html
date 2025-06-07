@@ -135,6 +135,29 @@
                 bottom: 0;
                 width: 100%;
             }
+
+            /* Styles for the new file content section */
+            .file-content-section {
+                margin-top: 40px;
+                border-top: 1px solid #ccc;
+                padding-top: 20px;
+            }
+            .file-content-section h3 {
+                text-align: center;
+                color: #333;
+                margin-bottom: 15px;
+            }
+            #fileContentDisplay {
+                background-color: #f9f9f9;
+                border: 1px solid #eee;
+                padding: 15px;
+                min-height: 100px;
+                overflow-y: auto;
+                white-space: pre-wrap; /* Preserves whitespace and wraps text */
+                text-align: left;
+                font-size: 14px;
+                color: #333;
+            }
         </style>
     </head>
     <body>
@@ -193,7 +216,7 @@
                     $198/sf
                     <div class="city-info">Median Home Price: $404,950</div>
                 </div>
-                
+
                 <div class="city-marker montgomery" style="text-align: center">
                     Montgomery<br>
                     $114/sf
@@ -223,6 +246,54 @@
         <footer>
             <p>© 2025 Moving to Alabama Guide</p>
         </footer>
+
+        <script>
+            // Define the path to your text file here
+            // IMPORTANT: This file must be hosted on a web server or be in the same
+            // directory as this HTML file if you're testing locally.
+            const filePath = 'numbers.txt'; // Example: Assuming 'numbers.txt' is in the same folder
+
+            // Element to display the file path
+            const filePathDisplay = document.getElementById('filePathDisplay');
+            filePathDisplay.textContent = filePath; // Show the path being fetched
+
+            // Element to display the extracted numbers
+            const fileContentDisplay = document.getElementById('fileContentDisplay');
+
+            // Function to read the text file from the URL and display numbers
+            function readTextFile() {
+                fileContentDisplay.textContent = 'Loading numbers...'; // Reset content on call
+
+                fetch(filePath)
+                    .then(response => {
+                        if (!response.ok) {
+                            // Check if the network response was successful
+                            throw new Error(`HTTP error! status: ${response.status} - Could not load file.`);
+                        }
+                        return response.text(); // Get the response body as plain text
+                    })
+                    .then(data => {
+                        // Use a regular expression to find all numbers (integers and decimals)
+                        // \b ensures whole numbers/decimals are matched (e.g., 123, 45.67)
+                        const numbers = data.match(/\b(\d+(\.\d+)?)\b/g);
+
+                        if (numbers && numbers.length > 0) {
+                            // Display each found number on a new line
+                            fileContentDisplay.textContent = numbers.join('\n');
+                        } else {
+                            fileContentDisplay.textContent = "No numbers found in the file.";
+                        }
+                    })
+                    .catch(error => {
+                        // Handle any errors during the fetch operation (e.g., file not found, network issues)
+                        console.error('Error fetching the file:', error);
+                        fileContentDisplay.textContent = `Error loading file: ${error.message}. Please ensure '${filePath}' exists and is accessible.`;
+                    });
+            }
+
+            // Call the function to read the file when the page loads
+            readTextFile();
+        </script>
     </body>
 </html>
 
