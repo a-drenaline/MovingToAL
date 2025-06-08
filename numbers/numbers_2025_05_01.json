@@ -1,0 +1,25 @@
+{
+    "al": {
+        "jefferson": {
+            "medianListingPrice": 249900,
+            "medianListingPriceSqft": 143,
+            "medianClosingPrice": 305000,
+            "medianAgeDays": 44,
+            "buyerSellerPercent": 5
+        },
+        "mobile": {
+            "medianListingPrice": 260000,
+            "medianListingPriceSqft": 146,
+            "medianClosingPrice": 235000,
+            "medianAgeDays": 55,
+            "buyerSellerPercent": 5
+        },
+        "madison": {
+            "medianListingPrice": 355900,
+            "medianListingPriceSqft": 168,
+            "medianClosingPrice": 328000,
+            "medianAgeDays": 54,
+            "buyerSellerPercent": 5
+        }
+    }
+}

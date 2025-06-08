@@ -136,8 +136,8 @@
                 width: 100%;
             }
 
-            /* Styles for the new file content section */
-            .file-content-section {
+            /* Styles for the old file content section */
+            .file-content-section { /* Original class, still applies */
                 margin-top: 40px;
                 border-top: 1px solid #ccc;
                 padding-top: 20px;
@@ -147,7 +147,7 @@
                 color: #333;
                 margin-bottom: 15px;
             }
-            #fileContentDisplay {
+            #fileContentDisplay { /* Original ID for numbers.txt content */
                 background-color: #f9f9f9;
                 border: 1px solid #eee;
                 padding: 15px;
@@ -157,6 +157,20 @@
                 text-align: left;
                 font-size: 14px;
                 color: #333;
+            }
+            /* Styles for the new JSON content sections */
+            #status-messages p { margin: 5px 0; font-size: 0.9em; }
+            #status-messages .warning { color: orange; }
+            #status-messages .error { color: red; }
+            #status-messages .success { color: green; }
+            #output-data pre { /* Styling for the JSON output */
+                background-color: #e9e9e9;
+                padding: 15px;
+                border-radius: 5px;
+                overflow-x: auto;
+                font-size: 0.85em;
+                line-height: 1.4;
+                border: 1px solid #ddd;
             }
         </style>
     </head>
@@ -247,127 +261,157 @@
                 <h3>External File Section <span id="filePathDisplay">Loading...</span></h3>
                 <pre id="fileContentDisplay">Loading numbers...</pre>
             </div>
+
+            <div class="file-content-section">
+                <h3>Monthly Data Load Status and Output</h3>
+                <div id="status-messages">
+                    <p><strong>Initializing monthly data load...</strong></p>
+                </div>
+                <hr>
+                <div id="output-data">
+                    <p>Data will appear here once loaded.</p>
+                </div>
+            </div>
+
+
         </main>
         <footer>
             <p>© 2025 Moving to Alabama Guide</p>
         </footer>
 
         <script>
-            // Define the path to your text file here
-            // IMPORTANT: This file must be hosted on a web server or be in the same
-            // directory as this HTML file if you're testing locally.
-            const filePath = 'numbers.txt'; // Example: Assuming 'numbers.txt' is in the same folder
+            // --- Helper Functions ---
 
-            // Element to display the file path
-            const filePathDisplay = document.getElementById('filePathDisplay');
-
-            // Element to display the extracted numbers
-            const fileContentDisplay = document.getElementById('fileContentDisplay');
-
-            // Set the initial text content for filePathDisplay if the element was found
-            // This defensive check is good practice, though moving the script to the end of <body> usually resolves the core issue.
-            if (filePathDisplay) {
-                // filePathDisplay.textContent = filePath; // Show the path being fetched
-                filePathDisplay.textContent = ""; // Show the path being fetched
-            } else {
-                console.error("Element with ID 'filePathDisplay' not found! Please check your HTML structure.");
+            // Converts a "Month Year" string (e.g., "April 2025") to a JavaScript Date object
+            function monthYearStr2DateObj(monthYearString) {
+                const [monthName, year] = monthYearString.split(' ');
+                const monthIndex = new Date(Date.parse(`${monthName} 1, ${year}`)).getMonth();
+                return new Date(year, monthIndex, 1);
             }
 
-            /**
-             * Formats a number to either an integer or two decimal places.
-             * @param {number} num The number to format.
-             * @param {string} format 'integer' or 'two-decimals'.
-             * @returns {string} The formatted number as a string.
-             */
-            function formatNumber(num, format) {
-                if (typeof num !== 'number' || isNaN(num)) {
-                    return ''; // Handle non-numeric input gracefully
-                }
-                if (format === 'integer') {
-                    return Math.round(num).toString(); // Round to nearest integer
-                } else if (format === 'two-decimals') {
-                    return num.toFixed(2); // Fix to 2 decimal places
-                }
-                return num.toString(); // Default to original string representation if format is unknown
+            // Formats a Date object into "YYYY_MM_DD" string for filename
+            function formatDateForFilename(dateObj) {
+                const year = dateObj.getFullYear();
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const day = '01'; 
+                return `${year}_${month}_${day}`;
             }
 
-            /**
-             * Displays the numbers from `extractedNumbersArray` in the specified format.
-             * @param {string} format 'integer' or 'two-decimals'.
-             */
-            function displayNumbers(format) {
-                if (fileContentDisplay) {
-                    if (extractedNumbersArray.length > 0) {
-                        const formattedNumbers = extractedNumbersArray.map(num => formatNumber(num, format));
-                        fileContentDisplay.textContent = formattedNumbers.join('\n');
-                    } else {
-                        fileContentDisplay.textContent = "No numbers found in the file to display.";
-                    }
-                } else {
-                    console.error("Element with ID 'fileContentDisplay' not found! Cannot display numbers.");
-                }
-            }
+            // --- Main Script Logic for Iterative JSON Loading ---
 
+            // 1. Define the range of months/years you want to load
+            const startMonthYearStr = "April 2025";
+            const endMonthYearStr = "June 2025"; // This will attempt to load Apr, May, Jun 2025
 
-            // Function to read the text file from the URL, extract numbers, and store them
-            function readTextFile() {
-                // Set initial loading message, ensuring the element exists before trying to modify it
-                if (fileContentDisplay) {
-                    fileContentDisplay.textContent = 'Loading numbers...';
-                } else {
-                    console.error("Element with ID 'fileContentDisplay' not found! Cannot display loading message.");
-                    return;
-                }
+            // Convert string dates to Date objects for iteration
+            let currentIterationDate = monthYearStr2DateObj(startMonthYearStr);
+            const endDate = monthYearStr2DateObj(endMonthYearStr);
 
-                fetch(filePath)
+            // Initialize arrays and objects for data storage and promises
+            const fetchPromises = []; // Stores all the Promises from fetch requests
+            const allMonthlyData = {}; // Stores the aggregated data { "YYYY_MM_DD": { state: {...} } }
+
+            // Get references to HTML elements for displaying status and output
+            const statusDiv = document.getElementById('status-messages');
+            const outputDiv = document.getElementById('output-data');
+
+            statusDiv.innerHTML += `<p><strong>Starting iterative load from ${startMonthYearStr} to ${endMonthYearStr}...</strong></p>`;
+            console.log(`Starting iterative load from ${startMonthYearStr} to ${endMonthYearStr}...`);
+
+            // 2. Iterate through the date range and prepare fetch promises
+            while (currentIterationDate.getTime() <= endDate.getTime()) {
+                const fileDateFormat = formatDateForFilename(currentIterationDate);
+                // Correct path: files are in 'numbers/' subdirectory
+                const filename = `numbers/numbers_${fileDateFormat}.json`; 
+
+                console.log(`Preparing to fetch: ${filename}`);
+                statusDiv.innerHTML += `<p>Attempting to load: <code>${filename}</code></p>`;
+
+                const fetchPromise = fetch(filename)
                     .then(response => {
                         if (!response.ok) {
-                            // Check if the network response was successful
-                            throw new Error(`HTTP error! status: ${response.status} - Could not load file.`);
+                            if (response.status === 404) {
+                                console.warn(`File not found: ${filename}. Skipping this month.`);
+                                statusDiv.innerHTML += `<p class="warning">Warning: File <code>${filename}</code> not found. Skipping.</p>`;
+                                return null; 
+                            }
+                            throw new Error(`HTTP error! status: ${response.status} ${response.statusText} for ${filename}`);
                         }
-                        return response.text(); // Get the response body as plain text
+                        return response.json();
                     })
                     .then(data => {
-                        // Regex to find all numbers (integers and decimals)
-                        const numberStrings = data.match(/\b(\d+(\.\d+)?)\b/g);
-
-                        if (numberStrings && numberStrings.length > 0) {
-                            // Convert string numbers to actual numeric types (floats)
-                            // Using parseFloat ensures they are treated as floats, even if they're whole numbers.
-                            extractedNumbersArray = numberStrings.map(parseFloat);
-
-                            // Initial display will be in integer format by default
-                            displayNumbers('integer'); // Or 'two-decimals' if you prefer that as default
-
-                            console.log("Numbers successfully loaded and stored in 'extractedNumbersArray':", extractedNumbersArray);
-                            console.log("Type of first element:", typeof extractedNumbersArray[0]); // Verify it's a number
-                        } else {
-                            extractedNumbersArray = []; // Ensure the array is empty if no numbers are found
-                            fileContentDisplay.textContent = "No numbers found in the file.";
-                            console.log("No numbers found in the file.");
+                        if (data) {
+                            allMonthlyData[fileDateFormat] = data; 
+                            console.log(`Successfully fetched and parsed data for ${fileDateFormat}.`);
+                            statusDiv.innerHTML += `<p class="success">Successfully loaded: <code>${filename}</code></p>`;
                         }
+                        return data; 
                     })
                     .catch(error => {
-                        // Handle any errors during the fetch operation (e.g., file not found, network issues)
-                        console.error('Error fetching the file:', error);
-                        fileContentDisplay.textContent = `Error loading file: ${error.message}. Please ensure '${filePath}' exists and is accessible.`;
-                        extractedNumbersArray = []; // Clear array on error
+                        console.error(`Error processing ${filename}:`, error);
+                        statusDiv.innerHTML += `<p class="error">Error loading <code>${filename}</code>: ${error.message}</p>`;
+                        return null;
                     });
+
+                fetchPromises.push(fetchPromise);
+
+                currentIterationDate.setMonth(currentIterationDate.getMonth() + 1);
             }
 
-            // Call the function to read the file when the page loads
-            readTextFile();
+            // 3. Use Promise.all to wait for all fetch operations to complete
+            Promise.all(fetchPromises)
+                .then(results => {
+                    console.log("\n--- All Monthly Data Loading Attempted ---");
+                    console.log("Final aggregated data structure:", allMonthlyData);
 
-            // Example of how you can use extractedNumbersArray after it's populated
-            // For example, if you want to perform calculations:
-            /*
-            setTimeout(() => { // Using setTimeout as fetch is asynchronous
-                if (extractedNumbersArray.length > 0) {
-                    let sum = extractedNumbersArray.reduce((acc, curr) => acc + curr, 0);
-                    console.log("Sum of numbers:", sum);
-                }
-            }, 1000);
-            */
+                    statusDiv.innerHTML += `<p><strong>All loading attempts completed. Total months loaded: ${Object.keys(allMonthlyData).length}</strong></p>`;
+
+                    // --- 4. Verification Code: Print Data to Webpage ---
+                    // This section iterates through the loaded data and displays a sample for each month.
+                    outputDiv.innerHTML = '<h3>Detailed Sample Data for Each Month:</h3>'; // Clear previous content
+
+                    const sortedMonthKeys = Object.keys(allMonthlyData).sort(); // Get and sort the month keys
+
+                    if (sortedMonthKeys.length === 0) {
+                        outputDiv.innerHTML += '<p>No data was successfully loaded for any month.</p>';
+                        return; // Exit if no data was loaded
+                    }
+
+                    for (const monthKey of sortedMonthKeys) {
+                        outputDiv.innerHTML += `<h4>--- Month: ${monthKey} ---</h4>`; // Display month header
+                        const currentMonthData = allMonthlyData[monthKey]; // Get data for the current month
+
+                        // Attempt to print data for a specific county (e.g., Jefferson, AL) if it exists
+                        if (currentMonthData.al && currentMonthData.al.jefferson) {
+                            outputDiv.innerHTML += `<p><strong>Jefferson, AL data:</strong></p>`;
+                            // Use JSON.stringify for pretty-printing the object
+                            outputDiv.innerHTML += `<pre>${JSON.stringify(currentMonthData.al.jefferson, null, 2)}</pre>`;
+                        } else {
+                            // Fallback if 'al' -> 'jefferson' data is not found for this month
+                            outputDiv.innerHTML += `<p>No 'al' -> 'jefferson' data found for this month, or structure is different.</p>`;
+                            
+                            // Attempt to print a sample from the first available state/county
+                            const firstStateKey = Object.keys(currentMonthData)[0]; // Get the first state key
+                            if (firstStateKey && currentMonthData[firstStateKey]) {
+                                const firstCountyKey = Object.keys(currentMonthData[firstStateKey])[0]; // Get the first county key in that state
+                                if (firstCountyKey && currentMonthData[firstStateKey][firstCountyKey]) {
+                                    outputDiv.innerHTML += `<p><strong>Sample from first available data (${firstStateKey} &rarr; ${firstCountyKey}):</strong></p>`;
+                                    outputDiv.innerHTML += `<pre>${JSON.stringify(currentMonthData[firstStateKey][firstCountyKey], null, 2)}</pre>`;
+                                } else {
+                                    outputDiv.innerHTML += `<p>No county data found for state '${firstStateKey}' in this month.</p>`;
+                                }
+                            } else {
+                                outputDiv.innerHTML += `<p>No state data found for this month.</p>`;
+                            }
+                        }
+                    }
+                    // --- End of Verification Code ---
+                })
+                .catch(overallError => {
+                    console.error("An overall error occurred during Promise.all:", overallError);
+                    statusDiv.innerHTML += `<p class="error">Overall loading failed: ${overallError.message}</p>`;
+                    outputDiv.textContent = `Overall loading failed: ${overallError.message}`;
+                });
         </script>
     </body>
 </html>
