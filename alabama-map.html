@@ -379,7 +379,7 @@
                         if (firstStateKey && currentMonthData[firstStateKey]) {
                             const firstCountyKey = Object.keys(currentMonthData[firstStateKey])[0]; // Get the first county key in that state
                             if (firstCountyKey && currentMonthData[firstStateKey][firstCountyKey]) {
-                                outputDiv.innerHTML += `<p><strong>Sample from first available data (${firstStateKey} &rarr; ${firstCountyKey}):</strong></p>`;
+                                outputDiv.innerHTML += `<p><strong>Next available data (${firstStateKey} &rarr; ${firstCountyKey}):</strong></p>`;
                                 outputDiv.innerHTML += `<pre>${JSON.stringify(currentMonthData[firstStateKey][firstCountyKey], null, 2)}</pre>`;
                             } else {
                                 outputDiv.innerHTML += `<p>No county data found for state '${firstStateKey}' in this month.</p>`;
