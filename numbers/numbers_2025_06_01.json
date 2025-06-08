@@ -1,25 +1,28 @@
 {
-    "al": {
-        "jefferson": {
-            "medianListingPrice": 249900,
-            "medianListingPriceSqft": 143,
-            "medianClosingPrice": 305000,
-            "medianAgeDays": 44,
-            "buyerSellerPercent": 10
+    "fl": {
+        "miami-dade": {
+            "majorCity": "miami",
+            "medianListingPrice": 610000,
+            "medianListingPriceSqft": 475,
+            "medianClosingPrice": 590000,
+            "medianAgeDays": 77,
+            "buyerSellerPercent": 2
         },
-        "mobile": {
-            "medianListingPrice": 260000,
-            "medianListingPriceSqft": 146,
-            "medianClosingPrice": 235000,
-            "medianAgeDays": 55,
-            "buyerSellerPercent": 100
+        "broward": {
+            "majorCity": "fort lauderdale",
+            "medianListingPrice": 400000,
+            "medianListingPriceSqft": 312,
+            "medianClosingPrice": 447000,
+            "medianAgeDays": 75,
+            "buyerSellerPercent": 2
         },
-        "madison": {
-            "medianListingPrice": 355900,
-            "medianListingPriceSqft": 168,
-            "medianClosingPrice": 328000,
-            "medianAgeDays": 54,
-            "buyerSellerPercent": 1000
+        "palm beach": {
+            "majorCity": "west palm beach",
+            "medianListingPrice": 499000,
+            "medianListingPriceSqft": 309,
+            "medianClosingPrice": 520000,
+            "medianAgeDays": 75,
+            "buyerSellerPercent": 2
         }
     }
 }

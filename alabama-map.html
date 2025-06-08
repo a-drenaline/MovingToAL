@@ -374,28 +374,18 @@
                         outputDiv.innerHTML += `<h4>--- Month: ${monthKey} ---</h4>`; // Display month header
                         const currentMonthData = allMonthlyData[monthKey]; // Get data for the current month
 
-                        // Attempt to print data for a specific county (e.g., Jefferson, AL) if it exists
-                        if (currentMonthData.al && currentMonthData.al.jefferson) {
-                            outputDiv.innerHTML += `<p><strong>Jefferson, AL data:</strong></p>`;
-                            // Use JSON.stringify for pretty-printing the object
-                            outputDiv.innerHTML += `<pre>${JSON.stringify(currentMonthData.al.jefferson, null, 2)}</pre>`;
-                        } else {
-                            // Fallback if 'al' -> 'jefferson' data is not found for this month
-                            outputDiv.innerHTML += `<p>No 'al' -> 'jefferson' data found for this month, or structure is different.</p>`;
-                            
-                            // Attempt to print a sample from the first available state/county
-                            const firstStateKey = Object.keys(currentMonthData)[0]; // Get the first state key
-                            if (firstStateKey && currentMonthData[firstStateKey]) {
-                                const firstCountyKey = Object.keys(currentMonthData[firstStateKey])[0]; // Get the first county key in that state
-                                if (firstCountyKey && currentMonthData[firstStateKey][firstCountyKey]) {
-                                    outputDiv.innerHTML += `<p><strong>Sample from first available data (${firstStateKey} &rarr; ${firstCountyKey}):</strong></p>`;
-                                    outputDiv.innerHTML += `<pre>${JSON.stringify(currentMonthData[firstStateKey][firstCountyKey], null, 2)}</pre>`;
-                                } else {
-                                    outputDiv.innerHTML += `<p>No county data found for state '${firstStateKey}' in this month.</p>`;
-                                }
+                        // Attempt to print a sample from the first available state/county
+                        const firstStateKey = Object.keys(currentMonthData)[0]; // Get the first state key
+                        if (firstStateKey && currentMonthData[firstStateKey]) {
+                            const firstCountyKey = Object.keys(currentMonthData[firstStateKey])[0]; // Get the first county key in that state
+                            if (firstCountyKey && currentMonthData[firstStateKey][firstCountyKey]) {
+                                outputDiv.innerHTML += `<p><strong>Sample from first available data (${firstStateKey} &rarr; ${firstCountyKey}):</strong></p>`;
+                                outputDiv.innerHTML += `<pre>${JSON.stringify(currentMonthData[firstStateKey][firstCountyKey], null, 2)}</pre>`;
                             } else {
-                                outputDiv.innerHTML += `<p>No state data found for this month.</p>`;
+                                outputDiv.innerHTML += `<p>No county data found for state '${firstStateKey}' in this month.</p>`;
                             }
+                        } else {
+                            outputDiv.innerHTML += `<p>No state data found for this month.</p>`;
                         }
                     }
                     // --- End of Verification Code ---
