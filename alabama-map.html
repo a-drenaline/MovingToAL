@@ -147,17 +147,7 @@
                 color: #333;
                 margin-bottom: 15px;
             }
-            #fileContentDisplay { /* Original ID for numbers.txt content */
-                background-color: #f9f9f9;
-                border: 1px solid #eee;
-                padding: 15px;
-                min-height: 100px;
-                overflow-y: auto;
-                white-space: pre-wrap; /* Preserves whitespace and wraps text */
-                text-align: left;
-                font-size: 14px;
-                color: #333;
-            }
+
             /* Styles for the new JSON content sections */
             #status-messages p { margin: 5px 0; font-size: 0.9em; }
             #status-messages .warning { color: orange; }
@@ -257,12 +247,7 @@
                 >
             </p>
 
-            <div class="file-content-section">
-                <h3>External File Section <span id="filePathDisplay">Loading...</span></h3>
-                <pre id="fileContentDisplay">Loading numbers...</pre>
-            </div>
-
-            <div class="file-content-section">
+            <!-- <div class="file-content-section">
                 <h3>Monthly Data Load Status and Output</h3>
                 <div id="status-messages">
                     <p><strong>Initializing monthly data load...</strong></p>
@@ -271,7 +256,7 @@
                 <div id="output-data">
                     <p>Data will appear here once loaded.</p>
                 </div>
-            </div>
+            </div> -->
 
 
         </main>
@@ -368,7 +353,7 @@
 
                     // --- 4. Verification Code: Print Data to Webpage ---
                     // This section iterates through the loaded data and displays a sample for each month.
-                    outputDiv.innerHTML = '<h3>Detailed Sample Data for Each Month:</h3>'; // Clear previous content
+                    outputDiv.innerHTML = '<h3>Detailed Sample Data for Each File:</h3>'; // Clear previous content
 
                     const sortedMonthKeys = Object.keys(allMonthlyData).sort(); // Get and sort the month keys
 
@@ -378,7 +363,7 @@
                     }
 
                     for (const monthKey of sortedMonthKeys) {
-                        outputDiv.innerHTML += `<h4>--- Month: ${monthKey} ---</h4>`; // Display month header
+                        outputDiv.innerHTML += `<h4>--- Year-Month-Day: ${monthKey} ---</h4>`; // Display month header
                         const currentMonthData = allMonthlyData[monthKey]; // Get data for the current month
 
                         // Attempt to print data for a specific county (e.g., Jefferson, AL) if it exists
