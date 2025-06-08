@@ -300,7 +300,8 @@
             const statusDiv = document.getElementById('status-messages');
             const outputDiv = document.getElementById('output-data');
 
-            statusDiv.innerHTML += `<p><strong>Starting iterative load from ${startMonthYearStr} to ${endMonthYearStr}...</strong></p>`;
+            // Commented out: Lines that would populate the "Monthly Data Load Status and Output" section (statusDiv)
+            // statusDiv.innerHTML += `<p><strong>Starting iterative load from ${startMonthYearStr} to ${endMonthYearStr}...</strong></p>`;
             console.log(`Starting iterative load from ${startMonthYearStr} to ${endMonthYearStr}...`);
 
             // 2. Iterate through the date range and prepare fetch promises
@@ -310,14 +311,16 @@
                 const filename = `numbers/numbers_${fileDateFormat}.json`; 
 
                 console.log(`Preparing to fetch: ${filename}`);
-                statusDiv.innerHTML += `<p>Attempting to load: <code>${filename}</code></p>`;
+                // Commented out: Lines that would populate the "Monthly Data Load Status and Output" section (statusDiv)
+                // statusDiv.innerHTML += `<p>Attempting to load: <code>${filename}</code></p>`;
 
                 const fetchPromise = fetch(filename)
                     .then(response => {
                         if (!response.ok) {
                             if (response.status === 404) {
                                 console.warn(`File not found: ${filename}. Skipping this month.`);
-                                statusDiv.innerHTML += `<p class="warning">Warning: File <code>${filename}</code> not found. Skipping.</p>`;
+                                // Commented out: Lines that would populate the "Monthly Data Load Status and Output" section (statusDiv)
+                                // statusDiv.innerHTML += `<p class="warning">Warning: File <code>${filename}</code> not found. Skipping.</p>`;
                                 return null; 
                             }
                             throw new Error(`HTTP error! status: ${response.status} ${response.statusText} for ${filename}`);
@@ -328,13 +331,17 @@
                         if (data) {
                             allMonthlyData[fileDateFormat] = data; 
                             console.log(`Successfully fetched and parsed data for ${fileDateFormat}.`);
-                            statusDiv.innerHTML += `<p class="success">Successfully loaded: <code>${filename}</code></p>`;
+                            // Commented out: Lines that would populate the "Monthly Data Load Status and Output" section (statusDiv)
+                            // statusDiv.innerHTML += `<p class="success">Successfully loaded: <code>${filename}</code></p>`;
                         }
                         return data; 
                     })
                     .catch(error => {
                         console.error(`Error processing ${filename}:`, error);
-                        statusDiv.innerHTML += `<p class="error">Error loading <code>${filename}</code>: ${error.message}</p>`;
+                        // Commented out: Lines that would populate the "Monthly Data Load Status and Output" section (statusDiv)
+                        // statusDiv.innerHTML += `<p class="error">Error loading <code>${filename}</code>: ${error.message}</p>`;
+                        // Commented out: Lines that would populate the "Monthly Data Load Status and Output" section (outputDiv error message)
+                        // outputDiv.textContent = `Overall loading failed: ${error.message}`;
                         return null;
                     });
 
@@ -349,11 +356,12 @@
                     console.log("\n--- All Monthly Data Loading Attempted ---");
                     console.log("Final aggregated data structure:", allMonthlyData);
 
-                    statusDiv.innerHTML += `<p><strong>All loading attempts completed. Total months loaded: ${Object.keys(allMonthlyData).length}</strong></p>`;
+                    // Commented out: Lines that would populate the "Monthly Data Load Status and Output" section (statusDiv)
+                    // statusDiv.innerHTML += `<p><strong>All loading attempts completed. Total months loaded: ${Object.keys(allMonthlyData).length}</strong></p>`;
 
-                    // --- 4. Verification Code: Print Data to Webpage ---
+                    // --- 4. Verification Code: Print Data to Webpage (outputDiv) ---
                     // This section iterates through the loaded data and displays a sample for each month.
-                    outputDiv.innerHTML = '<h3>Detailed Sample Data for Each File:</h3>'; // Clear previous content
+                    outputDiv.innerHTML = '<h3>Detailed Sample Data for Each Month:</h3>'; // Clear previous content
 
                     const sortedMonthKeys = Object.keys(allMonthlyData).sort(); // Get and sort the month keys
 
@@ -363,7 +371,7 @@
                     }
 
                     for (const monthKey of sortedMonthKeys) {
-                        outputDiv.innerHTML += `<h4>--- Year-Month-Day: ${monthKey} ---</h4>`; // Display month header
+                        outputDiv.innerHTML += `<h4>--- Month: ${monthKey} ---</h4>`; // Display month header
                         const currentMonthData = allMonthlyData[monthKey]; // Get data for the current month
 
                         // Attempt to print data for a specific county (e.g., Jefferson, AL) if it exists
@@ -394,7 +402,9 @@
                 })
                 .catch(overallError => {
                     console.error("An overall error occurred during Promise.all:", overallError);
-                    statusDiv.innerHTML += `<p class="error">Overall loading failed: ${overallError.message}</p>`;
+                    // Commented out: Lines that would populate the "Monthly Data Load Status and Output" section (statusDiv)
+                    // statusDiv.innerHTML += `<p class="error">Overall loading failed: ${overallError.message}</p>`;
+                    // Lines that would populate the "Detailed Sampled Data" section with error message (outputDiv)
                     outputDiv.textContent = `Overall loading failed: ${overallError.message}`;
                 });
         </script>
